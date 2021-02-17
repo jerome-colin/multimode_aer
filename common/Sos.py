@@ -10,12 +10,11 @@ def _flatten(in_list):
     return flat
 
 
-class Sos_Run():
+class Sos_Run_Multimode():
     def __init__(self,
                  main_wa,
                  ang_thetas,
                  aer_aotref,
-                 aer_model,
                  surf_alb,
                  main_resroot,
                  ang_rad_nbgauss = 40,
@@ -34,7 +33,6 @@ class Sos_Run():
         :param main_wa: wavelength in micrometers
         :param ang_thetas: sun zenith angle (0 is nadir)
         :param aer_aotref: aerosol AOT at reference wavelength (0.55)
-        :param aer_model: use 5 for multimode
         :param surf_alb: surface reflectance
         :param main_resroot: output root directory
         :param ang_rad_nbgauss: discrete number of angles used for rad calc, 40 recommended
@@ -52,10 +50,10 @@ class Sos_Run():
 
         self.main_resroot = main_resroot
 
-        if aer_dirmie == None:
+        if aer_dirmie is None:
             aer_dirmie = main_resroot + '/MIE'
 
-        if surf_dir == None:
+        if surf_dir is None:
             surf_dir = main_resroot + '/BRDF_BPDF'
 
         self.sos_abs_fic = sos_abs_fic
@@ -85,7 +83,7 @@ class Sos_Run():
         self.args.append("-AER.AOTref %4.2f" % aer_aotref)
         self.args.append("-AER.ResFile Aerosols.txt")
         self.args.append("-AER.Tronca 1")
-        self.args.append("-AER.Model %i" % aer_model)
+        self.args.append("-AER.Model 5")
         self.args.append("-AER.DefMixture %s" % aer_defmixture)
         self.args.append("-SURF.Dir %s" % surf_dir)
         self.args.append("-SURF.Type %i" % surf_type)
