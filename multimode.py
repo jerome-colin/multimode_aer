@@ -29,8 +29,8 @@ def launch(wavelength, thetas, tau, rho_s, target, model):
 
 
 def exp(wavelength, thetas, aer_collection_dir, output_dir, verbose=False,
-        tau_min=0, tau_max=1.2, tau_step=0.2,
-        rho_s_min=0.1, rho_s_max=1.0, rho_s_step=0.1,
+        tau_min=0, tau_max=1.2, tau_step=0.4,
+        rho_s_min=0.1, rho_s_max=1.15, rho_s_step=0.15,
         netcdf_filename="data.nc"):
     """
     Create output array and set values from SOS_ABS runs
