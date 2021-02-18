@@ -91,15 +91,20 @@ class Sos_Run_Multimode():
         self.args.append("-SURF.Ind 1.34")
         self.args.append("-SOS.Trans fic_trans.txt")
 
-    def launch(self):
+    def launch(self, main_resroot):
         """
         creates and launch a SOS_ABS run according to args
         :return: a rho_toa value for dphi = 0
         """
         os.environ['SOS_ABS_FIC'] = self.sos_abs_fic
         cmd = _flatten(self.args)
-        with open('out.txt', 'w+') as fout:
-            with open('err.txt', 'w+') as ferr:
+
+        if not os.path.isdir("log"):
+            os.mkdir("log")
+            print("Info: creating log directory")
+
+        with open("log/" + main_resroot.replace('/','_') + '_out.txt', 'w+') as fout:
+            with open("log/" + main_resroot.replace('/','_') + '_err.txt', 'w+') as ferr:
                 subprocess.call(cmd, shell=True, stdout=fout, stderr=ferr)
 
         try:
@@ -109,7 +114,5 @@ class Sos_Run_Multimode():
 
         except FileNotFoundError:
             print("Error: cmd failed (%s)" % cmd)
-            print("Error: SOS_ABS failed with the following message...")
-            with open("out.txt", 'r') as e:
-                print(e.read())
-                sys.exit(1)
+            print("Error: SOS_ABS failed, check log")
+            sys.exit(1)

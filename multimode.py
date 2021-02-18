@@ -2,7 +2,7 @@
 import argparse
 import xarray as xr
 import numpy as np
-import os, sys
+import os, sys, shutil
 
 import common.Sos as Sos
 
@@ -25,7 +25,7 @@ def launch(wavelength, thetas, tau, rho_s, target, model):
                               model,
                               target)
 
-    return r.launch()
+    return r.launch(target)
 
 
 def exp(wavelength, thetas, aer_collection_dir, output_dir, verbose=False,
@@ -67,13 +67,13 @@ def exp(wavelength, thetas, aer_collection_dir, output_dir, verbose=False,
     for model in range(len(aer_list)):
         for tau in range(len(tau_list)):
             for rho_s in range(len(rho_s_list)):
+                run_path = "%s/%s/t%s_s%s" % (output_dir, aer_list_coords[model], str(int(tau_list[tau] * 100)),
+                                                 str(int(rho_s_list[rho_s] * 100)))
                 data[model, tau, rho_s] = launch(wavelength,
                                                  thetas,
                                                  tau_list[tau],
                                                  rho_s_list[rho_s],
-                                                 "%s/%s/t%s_s%s" % (
-                                                 output_dir, aer_list[model], str(int(tau_list[tau] * 100)),
-                                                 str(int(rho_s_list[rho_s] * 100))),
+                                                 run_path,
                                                  aer_list[model])
 
                 if verbose:
@@ -94,6 +94,7 @@ def main():
     multimode.py 0.55 0 /home/colinj/code/luts_init/multimodes_aer/resources/dust50_bc50_550nm.aer tmp
     :return: a data.nc in the output_dir
     """
+
     parser = argparse.ArgumentParser()
     parser.add_argument("wavelength",
                         help="Wavelength ([0.2:4.0] micrometers)",
@@ -107,6 +108,9 @@ def main():
     parser.add_argument("output_dir",
                         help="Root of SOS_ABS output directory",
                         type=str)
+    parser.add_argument("--rmdir",
+                        help="Force deletion of output dir if exist",
+                        action="store_true", default=False)
     parser.add_argument("-v", "--verbose",
                         help="Print values to standard output",
                         action="store_true", default=False)
@@ -125,6 +129,11 @@ def main():
     if not os.path.isdir(args.output_dir):
         os.mkdir(args.output_dir)
         print("Warning: %s not found, created it..." % args.output_dir)
+    elif args.rmdir:
+        shutil.rmtree(args.output_dir)
+        os.mkdir(args.output_dir)
+        print("Info: %s cleaned-up" % args.output_dir)
+
 
     exp(args.wavelength,
         args.thetas,
