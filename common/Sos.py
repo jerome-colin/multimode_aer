@@ -1,5 +1,5 @@
 import subprocess
-import os
+import sys, os
 
 
 def _flatten(in_list):
@@ -16,10 +16,10 @@ class Sos_Run_Multimode():
                  ang_thetas,
                  aer_aotref,
                  surf_alb,
+                 aer_defmixture,
                  main_resroot,
                  ang_rad_nbgauss = 40,
                  ang_aer_nbgauss = 40,
-                 aer_defmixture = None,
                  aer_waref = 0.55,
                  ap_psurf = 1013,
                  view_dphi = 180,
@@ -102,7 +102,14 @@ class Sos_Run_Multimode():
             with open('err.txt', 'w+') as ferr:
                 subprocess.call(cmd, shell=True, stdout=fout, stderr=ferr)
 
-        with open(self.main_resroot + '/SOS/SOS_Up.txt', 'r') as sos_up:
-            rho_toa = float(sos_up.readline().split()[2])
+        try:
+            with open(self.main_resroot + '/SOS/SOS_Up.txt', 'r') as sos_up:
+                rho_toa = float(sos_up.readline().split()[2])
+                return rho_toa
 
-        return rho_toa
+        except FileNotFoundError:
+            print("Error: cmd failed (%s)" % cmd)
+            print("Error: SOS_ABS failed with the following message...")
+            with open("out.txt", 'r') as e:
+                print(e.read())
+                sys.exit(1)
