@@ -29,8 +29,8 @@ def launch(wavelength, thetas, tau, rho_s, target, model):
 
 
 def exp(wavelength, thetas, aer_collection_dir, output_dir, verbose=False,
-        tau_min=0, tau_max=1.2, tau_step=0.4,
-        rho_s_min=0.1, rho_s_max=1.0, rho_s_step=0.3,
+        tau_min=0, tau_max=1.2, tau_step=0.2,
+        rho_s_min=0.1, rho_s_max=1.0, rho_s_step=0.1,
         netcdf_filename="data.nc"):
     """
     Create output array and set values from SOS_ABS runs
@@ -91,7 +91,7 @@ def main():
     Warning: assumes that the main SOS_ABS exec file is in system path
 
     Example of usage:
-    multimode.py 0.55 0 /home/colinj/code/luts_init/multimodes_aer/resources/dust50_bc50_550nm.aer tmp
+    multimode.py 0.55 0 /home/colinj/code/luts_init/multimodes_aer/resources/ tmp
     :return: a data.nc in the output_dir
     """
 
