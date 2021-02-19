@@ -1,0 +1,17 @@
+NUMBER OF AEROSOLS MODES: 2
+SIZE DISTRIBUTION MODE 1 (Sulfate HR30 CAMS):				LND 
+    MODAL RADIUS (microns)  :          						0.0212
+    STANDARD DEVIATION (microns):                  			0.35
+    REFRACTIVE INDEX at WA_SIMU - Real part: 				1.5306
+    REFRACTIVE INDEX at WA_SIMU - Imaginary part (<0):  	-0.0
+    REFRACTIVE INDEX at WA_REF - Real part: 	      		1.5306
+    REFRACTIVE INDEX at WA_REF - Imaginary part (<0):   	-0.0
+    PROPORTION TO THE TOTAL AOT at WA_REF :              	0.5
+SIZE DISTRIBUTION MODE 2 (Black Carbon CAMS):				LND 
+    MODAL RADIUS (microns)  : 	                    		0.0118
+    STANDARD DEVIATION (microns):                       	0.690775
+    REFRACTIVE INDEX at WA_SIMU - Real part: 	      		1.75
+    REFRACTIVE INDEX at WA_SIMU - Imaginary part (<0):	    -0.45
+    REFRACTIVE INDEX at WA_REF - Real part: 	      		1.75
+    REFRACTIVE INDEX at WA_REF - Imaginary part (<0):   	-0.45
+    PROPORTION TO THE TOTAL AOT at WA_REF :              	0.5
