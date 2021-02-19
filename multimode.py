@@ -3,9 +3,10 @@ import argparse
 import xarray as xr
 import numpy as np
 import os, sys, shutil
+from collections import OrderedDict
 
 import common.Sos as Sos
-
+import common.aerfile_parser as prs
 
 def launch(wavelength, thetas, tau, rho_s, target, model):
     """
@@ -30,7 +31,7 @@ def launch(wavelength, thetas, tau, rho_s, target, model):
 
 def exp(wavelength, thetas, aer_collection_dir, output_dir, verbose=False,
         tau_min=0, tau_max=1.2, tau_step=0.4,
-        rho_s_min=0.1, rho_s_max=1.15, rho_s_step=0.15,
+        rho_s_min=0.1, rho_s_max=1.15, rho_s_step=0.55,
         netcdf_filename="data.nc"):
     """
     Create output array and set values from SOS_ABS runs
