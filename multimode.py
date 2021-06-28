@@ -11,6 +11,8 @@ import uuid
 import common.Sos as Sos
 import common.aerfile_parser as prs
 
+import time
+
 
 def launch(params):
     """
@@ -78,13 +80,10 @@ def exp(wavelength, thetas, aer_collection_dir, output_dir, verbose=False,
     tau_list = np.arange(tau_min, tau_max, tau_step)
     rho_s_list = np.arange(rho_s_min, rho_s_max, rho_s_step)
 
-
-
-
     # Generate a list of tuples where each tuple is a combination of parameters.
     # The list will contain all possible combinations of parameters.
     paramlist = list(itertools.product(wavelength_list, thetas_list, tau_list, rho_s_list, aer_list))
-    #print(paramlist)
+    # print(paramlist)
 
     # Generate processes equal to the number of cores
     pool = multiprocessing.Pool()
@@ -109,7 +108,7 @@ def exp(wavelength, thetas, aer_collection_dir, output_dir, verbose=False,
     #                 print("model: %s, tau: %4.2f, rho_s: %4.2f, rho_toa: %8.6f" % (
     #                     aer_list_coords[model], tau_list[tau], rho_s_list[rho_s], data[model, tau, rho_s]))
 
-    #print(res)
+    # print(res)
 
     # Create an xarray container
     # data = xr.DataArray(np.zeros((len(aer_list), len(tau_list), len(rho_s_list))),
@@ -174,13 +173,16 @@ def main():
         os.mkdir(args.output_dir)
         print("Info: %s cleaned-up" % args.output_dir)
 
-    exp(args.wavelength,
-        args.thetas,
-        args.aer_collection_dir,
-        args.output_dir,
-        verbose=args.verbose)
+    time_init = time.time()
 
-    print("Done...")
+    exp(args.wavelength,
+                                     args.thetas,
+                                     args.aer_collection_dir,
+                                     args.output_dir,
+                                     verbose=args.verbose)
+
+    time_end = time.time()
+    print("Done in %12.2fs..." % (time_end-time_init))
     sys.exit(0)
 
 
