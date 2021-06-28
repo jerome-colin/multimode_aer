@@ -7,6 +7,7 @@ from collections import OrderedDict
 
 import common.Sos as Sos
 import common.aerfile_parser as prs
+import time
 
 def launch(wavelength, thetas, tau, rho_s, target, model):
     """
@@ -135,6 +136,7 @@ def main():
         os.mkdir(args.output_dir)
         print("Info: %s cleaned-up" % args.output_dir)
 
+    time_init = time.time()
 
     exp(args.wavelength,
         args.thetas,
@@ -142,7 +144,8 @@ def main():
         args.output_dir,
         verbose=args.verbose)
 
-    print("Done...")
+    time_end = time.time()
+    print("Done in %12.3fs..." % (time_end - time_init))
     sys.exit(0)
 
 
