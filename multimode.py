@@ -4,12 +4,17 @@ import xarray as xr
 import numpy as np
 import os, sys, shutil
 from collections import OrderedDict
+import itertools
+import multiprocessing
+import uuid
 
 import common.Sos as Sos
 import common.aerfile_parser as prs
+
 import time
 
-def launch(wavelength, thetas, tau, rho_s, target, model):
+
+def launch(params):
     """
     A one-run function, for // purpose
     :param wavelength:
@@ -20,6 +25,18 @@ def launch(wavelength, thetas, tau, rho_s, target, model):
     :param model:
     :return: rho_toa as float
     """
+
+    wavelength = params[0]
+    thetas = params[1]
+    tau = params[2]
+    rho_s = params[3]
+    model = params[4]
+    target_root = "tmp"
+
+    # Create a random target path for SOS outputs (avoid defining it before calling launch)
+    uuid_str = str(uuid.uuid4())
+    target = '%s/tmp_%s' % (target_root, uuid_str)
+
     r = Sos.Sos_Run_Multimode(wavelength,
                               thetas,
                               tau,
@@ -49,7 +66,10 @@ def exp(wavelength, thetas, aer_collection_dir, output_dir, verbose=False,
     :param netcdf_filename
     :return: a <netcdf_filename> in <output_dir>
     """
-    # Set dimensions
+    # Set lists for each dimensions
+
+    wavelength_list = [0.55]
+    thetas_list = [0]
 
     aer_list = []  # fullpath to aer model files
     aer_list_coords = []  # clean aer model name for xarray coords
@@ -60,27 +80,44 @@ def exp(wavelength, thetas, aer_collection_dir, output_dir, verbose=False,
     tau_list = np.arange(tau_min, tau_max, tau_step)
     rho_s_list = np.arange(rho_s_min, rho_s_max, rho_s_step)
 
-    # Create an xarray container
-    data = xr.DataArray(np.zeros((len(aer_list), len(tau_list), len(rho_s_list))),
-                        dims=("model", "tau", "rho_s"),
-                        coords={"model": aer_list_coords, "tau": tau_list, "rho_s": rho_s_list})
+    # Generate a list of tuples where each tuple is a combination of parameters.
+    # The list will contain all possible combinations of parameters.
+    paramlist = list(itertools.product(wavelength_list, thetas_list, tau_list, rho_s_list, aer_list))
+    # print(paramlist)
+
+    # Generate processes equal to the number of cores
+    pool = multiprocessing.Pool()
+
+    # Distribute the parameter sets evenly across the cores
+    res = pool.map(launch, paramlist)
 
     # Loop over dimensions
-    for model in range(len(aer_list)):
-        for tau in range(len(tau_list)):
-            for rho_s in range(len(rho_s_list)):
-                run_path = "%s/%s/t%s_s%s" % (output_dir, aer_list_coords[model], str(int(tau_list[tau] * 100)),
-                                                 str(int(rho_s_list[rho_s] * 100)))
-                data[model, tau, rho_s] = launch(wavelength,
-                                                 thetas,
-                                                 tau_list[tau],
-                                                 rho_s_list[rho_s],
-                                                 run_path,
-                                                 aer_list[model])
+    # for model in range(len(aer_list)):
+    #     for tau in range(len(tau_list)):
+    #         for rho_s in range(len(rho_s_list)):
+    #             run_path = "%s/%s/t%s_s%s" % (output_dir, aer_list_coords[model], str(int(tau_list[tau] * 100)),
+    #                                           str(int(rho_s_list[rho_s] * 100)))
+    #             data[model, tau, rho_s] = launch(wavelength,
+    #                                              thetas,
+    #                                              tau_list[tau],
+    #                                              rho_s_list[rho_s],
+    #                                              aer_list[model],
+    #                                              target_root=output_dir)
+    #
+    #             if verbose:
+    #                 print("model: %s, tau: %4.2f, rho_s: %4.2f, rho_toa: %8.6f" % (
+    #                     aer_list_coords[model], tau_list[tau], rho_s_list[rho_s], data[model, tau, rho_s]))
 
-                if verbose:
-                    print("model: %s, tau: %4.2f, rho_s: %4.2f, rho_toa: %8.6f" % (
-                    aer_list_coords[model], tau_list[tau], rho_s_list[rho_s], data[model, tau, rho_s]))
+    # print(res)
+
+    # Create an xarray container
+    # data = xr.DataArray(np.zeros((len(aer_list), len(tau_list), len(rho_s_list))),
+    #                     dims=("model", "tau", "rho_s"),
+    #                     coords={"model": aer_list_coords, "tau": tau_list, "rho_s": rho_s_list})
+    res_arr = np.array(res).reshape((len(aer_list), len(tau_list), len(rho_s_list)))
+    data = xr.DataArray(res_arr,
+                        dims=("model", "tau", "rho_s"),
+                        coords={"model": aer_list_coords, "tau": tau_list, "rho_s": rho_s_list})
 
     # Saving to netcdf
     data.to_netcdf("%s/%s" % (output_dir, netcdf_filename))
@@ -139,13 +176,13 @@ def main():
     time_init = time.time()
 
     exp(args.wavelength,
-        args.thetas,
-        args.aer_collection_dir,
-        args.output_dir,
-        verbose=args.verbose)
+                                     args.thetas,
+                                     args.aer_collection_dir,
+                                     args.output_dir,
+                                     verbose=args.verbose)
 
     time_end = time.time()
-    print("Done in %12.3fs..." % (time_end - time_init))
+    print("Done in %12.2fs..." % (time_end-time_init))
     sys.exit(0)
 
 
