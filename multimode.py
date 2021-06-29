@@ -83,7 +83,6 @@ def exp(wavelength, thetas, aer_collection_dir, output_dir, verbose=False,
     # Generate a list of tuples where each tuple is a combination of parameters.
     # The list will contain all possible combinations of parameters.
     paramlist = list(itertools.product(wavelength_list, thetas_list, tau_list, rho_s_list, aer_list))
-    # print(paramlist)
 
     # Generate processes equal to the number of cores
     pool = multiprocessing.Pool()
@@ -91,29 +90,7 @@ def exp(wavelength, thetas, aer_collection_dir, output_dir, verbose=False,
     # Distribute the parameter sets evenly across the cores
     res = pool.map(launch, paramlist)
 
-    # Loop over dimensions
-    # for model in range(len(aer_list)):
-    #     for tau in range(len(tau_list)):
-    #         for rho_s in range(len(rho_s_list)):
-    #             run_path = "%s/%s/t%s_s%s" % (output_dir, aer_list_coords[model], str(int(tau_list[tau] * 100)),
-    #                                           str(int(rho_s_list[rho_s] * 100)))
-    #             data[model, tau, rho_s] = launch(wavelength,
-    #                                              thetas,
-    #                                              tau_list[tau],
-    #                                              rho_s_list[rho_s],
-    #                                              aer_list[model],
-    #                                              target_root=output_dir)
-    #
-    #             if verbose:
-    #                 print("model: %s, tau: %4.2f, rho_s: %4.2f, rho_toa: %8.6f" % (
-    #                     aer_list_coords[model], tau_list[tau], rho_s_list[rho_s], data[model, tau, rho_s]))
-
-    # print(res)
-
     # Create an xarray container
-    # data = xr.DataArray(np.zeros((len(aer_list), len(tau_list), len(rho_s_list))),
-    #                     dims=("model", "tau", "rho_s"),
-    #                     coords={"model": aer_list_coords, "tau": tau_list, "rho_s": rho_s_list})
     res_arr = np.array(res).reshape((len(aer_list), len(tau_list), len(rho_s_list)))
     data = xr.DataArray(res_arr,
                         dims=("model", "tau", "rho_s"),
