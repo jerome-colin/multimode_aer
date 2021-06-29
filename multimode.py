@@ -47,14 +47,17 @@ def launch(params):
     return r.launch(target)
 
 
-def exp(wavelength, thetas, aer_collection_dir, output_dir, verbose=False,
+def exp(wavelength, aer_collection_dir, output_dir, verbose=False,
+        thetas_min=0, thetas_max=75, thetas_step = 15,
         tau_min=0, tau_max=1.2, tau_step=0.4,
         rho_s_min=0.1, rho_s_max=1.15, rho_s_step=0.15,
         netcdf_filename="data.nc"):
     """
     Create output array and set values from SOS_ABS runs
+    :param thetas_step: sun zenith angle
+    :param thetas_max: sun zenith angle, 0 is nadir
+    :param thetas_min: sun zenith angle, 0 is nadir
     :param wavelength: simulation wavelength, in micrometers
-    :param thetas: sun zenith angle, 0 is nadir
     :param output_dir: root output directory
     :param aer_collection_dir: user defined aerosol mixture
     :param tau_min: aerosol AOT at reference wavelength, from
@@ -67,16 +70,17 @@ def exp(wavelength, thetas, aer_collection_dir, output_dir, verbose=False,
     :return: a <netcdf_filename> in <output_dir>
     """
     # Set lists for each dimensions
+    wavelength_list = [0.55] # Overrides any user-defined value
 
-    wavelength_list = [0.55]
-    thetas_list = [0]
-
+    # Get list of aerosols from files definitions
     aer_list = []  # fullpath to aer model files
     aer_list_coords = []  # clean aer model name for xarray coords
     for f in os.listdir(aer_collection_dir):
         aer_list.append(os.path.join(aer_collection_dir, f))
         aer_list_coords.append(f.split(sep='.')[0])
 
+    # Dimensions for thetas, tau and rho_s
+    thetas_list = np.arange(thetas_min, thetas_max, thetas_step)
     tau_list = np.arange(tau_min, tau_max, tau_step)
     rho_s_list = np.arange(rho_s_min, rho_s_max, rho_s_step)
 
@@ -91,10 +95,10 @@ def exp(wavelength, thetas, aer_collection_dir, output_dir, verbose=False,
     res = pool.map(launch, paramlist)
 
     # Create an xarray container
-    res_arr = np.array(res).reshape((len(aer_list), len(tau_list), len(rho_s_list)))
+    res_arr = np.array(res).reshape((len(aer_list), len(thetas_list), len(tau_list), len(rho_s_list)))
     data = xr.DataArray(res_arr,
-                        dims=("model", "tau", "rho_s"),
-                        coords={"model": aer_list_coords, "tau": tau_list, "rho_s": rho_s_list})
+                        dims=("model", "thetas", "tau", "rho_s"),
+                        coords={"model": aer_list_coords, "thetas": thetas_list, "tau": tau_list, "rho_s": rho_s_list})
 
     # Saving to netcdf
     data.to_netcdf("%s/%s" % (output_dir, netcdf_filename))
@@ -115,9 +119,9 @@ def main():
     parser.add_argument("wavelength",
                         help="Wavelength ([0.2:4.0] micrometers)",
                         type=float)
-    parser.add_argument("thetas",
-                        help="Solar zenith angle ([0:90] degrees)",
-                        type=float)
+    # parser.add_argument("thetas",
+    #                     help="Solar zenith angle ([0:90] degrees)",
+    #                     type=float)
     parser.add_argument("aer_collection_dir",
                         help="Directory containing user defined aerosol file with extension .aer",
                         type=str)
@@ -136,9 +140,9 @@ def main():
     if (args.wavelength < 0.2) or (args.wavelength > 4.0):
         print("Error: the wavelength %6.3f is out of SOS_ABS range ([0.2:4.0] micrometers)" % args.wavelength)
         sys.exit(1)
-    if (args.thetas < 0.) or (args.thetas > 90.):
-        print("Error: the solar zenith angle %6.3f is out of range ([0:90])" % args.thetas)
-        sys.exit(1)
+    # if (args.thetas < 0.) or (args.thetas > 90.):
+    #     print("Error: the solar zenith angle %6.3f is out of range ([0:90])" % args.thetas)
+    #     sys.exit(1)
     if not os.path.isdir(args.aer_collection_dir):
         print("Error: %s is not a directory" % args.aer_collection_dir)
         sys.exit(1)
@@ -153,13 +157,12 @@ def main():
     time_init = time.time()
 
     exp(args.wavelength,
-                                     args.thetas,
-                                     args.aer_collection_dir,
-                                     args.output_dir,
-                                     verbose=args.verbose)
+        args.aer_collection_dir,
+        args.output_dir,
+        verbose=args.verbose)
 
     time_end = time.time()
-    print("Done in %12.2fs..." % (time_end-time_init))
+    print("Done in %12.2fs..." % (time_end - time_init))
     sys.exit(0)
 
 
