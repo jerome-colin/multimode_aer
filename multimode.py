@@ -27,10 +27,11 @@ def launch(params):
     """
 
     wavelength = params[0]
-    thetas = params[1]
-    tau = params[2]
-    rho_s = params[3]
-    model = params[4]
+    model = params[1]
+    thetas = params[2]
+    tau = params[3]
+    rho_s = params[4]
+
     target_root = "tmp"
 
     # Create a random target path for SOS outputs (avoid defining it before calling launch)
@@ -48,8 +49,9 @@ def launch(params):
 
 
 def exp(wavelength, thetas, aer_collection_dir, output_dir, verbose=False,
-        tau_min=0, tau_max=1.2, tau_step=0.4,
-        rho_s_min=0.1, rho_s_max=1.15, rho_s_step=0.15,
+        thetas_min=0, thetas_max=85, thetas_step=5,
+        tau_min=0.0, tau_max=1.2, tau_step=0.2, #0, 1.2, 0.4
+        rho_s_min=0.1, rho_s_max=1.15, rho_s_step=0.05, #0.1, 1.15, 0.15
         netcdf_filename="data.nc"):
     """
     Create output array and set values from SOS_ABS runs
@@ -69,7 +71,7 @@ def exp(wavelength, thetas, aer_collection_dir, output_dir, verbose=False,
     # Set lists for each dimensions
 
     wavelength_list = [0.55]
-    thetas_list = [0]
+    thetas_list = np.round(np.arange(thetas_min, thetas_max, thetas_step), 1)
 
     aer_list = []  # fullpath to aer model files
     aer_list_coords = []  # clean aer model name for xarray coords
@@ -77,12 +79,12 @@ def exp(wavelength, thetas, aer_collection_dir, output_dir, verbose=False,
         aer_list.append(os.path.join(aer_collection_dir, f))
         aer_list_coords.append(f.split(sep='.')[0])
 
-    tau_list = np.arange(tau_min, tau_max, tau_step)
-    rho_s_list = np.arange(rho_s_min, rho_s_max, rho_s_step)
+    tau_list = np.round(np.arange(tau_min, tau_max, tau_step), 2)
+    rho_s_list = np.round(np.arange(rho_s_min, rho_s_max, rho_s_step), 2)
 
     # Generate a list of tuples where each tuple is a combination of parameters.
     # The list will contain all possible combinations of parameters.
-    paramlist = list(itertools.product(wavelength_list, thetas_list, tau_list, rho_s_list, aer_list))
+    paramlist = list(itertools.product(wavelength_list, aer_list, thetas_list, tau_list, rho_s_list ))
 
     # Generate processes equal to the number of cores
     pool = multiprocessing.Pool()
@@ -91,13 +93,21 @@ def exp(wavelength, thetas, aer_collection_dir, output_dir, verbose=False,
     res = pool.map(launch, paramlist)
 
     # Create an xarray container
-    res_arr = np.array(res).reshape((len(aer_list), len(tau_list), len(rho_s_list)))
+    res_arr = np.array(res).reshape((len(aer_list), len(thetas_list), len(tau_list), len(rho_s_list)))
     data = xr.DataArray(res_arr,
-                        dims=("model", "tau", "rho_s"),
-                        coords={"model": aer_list_coords, "tau": tau_list, "rho_s": rho_s_list})
+                        dims=("model", "thetas", "tau", "rho_s"),
+                        coords={"model": aer_list_coords, "thetas": thetas_list, "tau": tau_list, "rho_s": rho_s_list})
 
     # Saving to netcdf
     data.to_netcdf("%s/%s" % (output_dir, netcdf_filename))
+
+    # TEST VALUES
+    # dust_only_550nm, wl=550, thetas=0, tau=0, rho_s=0.1, rho_toa=0.126901
+    # sulfate_hr30_80_bc_20_550nm, wl=550, thetas=0, tau=0, rho_s=0.1, rho_toa=0.126901
+    # sulfate_hr30_only_550nm, wl=550, thetas=0, tau=0.8, rho_s=0.1, rho_tao=0.311694
+    # bc_only_550nm, wl=550, thetas=80, tau=0.4, rho_s=0.6, rho_tao=0.028060
+    # dust_only_550nm, wl=550, thetas=5, tau=0.6, rho_s=1.05, rho_tao=1.008341
+    # sulfate_hr30_80_bc_20_550nm, wl=550, thetas=55, tau=0.4, rho_s=0.15, rho_toa=0.130648
 
 
 def main():
