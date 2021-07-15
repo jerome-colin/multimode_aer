@@ -41,6 +41,7 @@ class Aerosol:
 
 
 class Library:
+    # TODO: move to another dedicated file
     def __init__(self):
         self.species = ["DUST", "BLACK CARBON", "ORGANIC MATTER", "SEA SALT", "SULFATE", "NITRATE", "AMMONIUM"]
         self._species_short = ["DU", "BC", "OM", "SS", "SU", "NI", "AM"]
@@ -70,7 +71,7 @@ class Library:
         # Warning: wavelength dimension not ordered, but follows S2A + REF (550nm), S2B diff neglected as a first approximation
         self.sentinel2_wavelengths = [443 , 492, 560, 664, 704, 740, 783, 830, 865, 945, 1373, 1613, 2198]
 
-        _refractive_indexes_img_simu = [[[-0.007581,-0.005964,-0.005095,-0.003996,-0.004027,-0.004129,-0.004252,-0.004300,-0.004300,-0.004403,-0.004500,-0.004500,-0.004500],
+        _s2_refractive_indexes_img_simu = [[[-0.007581,-0.005964,-0.005095,-0.003996,-0.004027,-0.004129,-0.004252,-0.004300,-0.004300,-0.004403,-0.004500,-0.004500,-0.004500],
                                      [-0.007581,-0.005964,-0.005095,-0.003996,-0.004027,-0.004129,-0.004252,-0.004300,-0.004300,-0.004403,-0.004500,-0.004500,-0.004500],
                                      [-0.007581,-0.005964,-0.005095,-0.003996,-0.004027,-0.004129,-0.004252,-0.004300,-0.004300,-0.004403,-0.004500,-0.004500,-0.004500],
                                      [-0.007581,-0.005964,-0.005095,-0.003996,-0.004027,-0.004129,-0.004252,-0.004300,-0.004300,-0.004403,-0.004500,-0.004500,-0.004500],
@@ -130,7 +131,7 @@ class Library:
                                 [-0.000000,-0.000000,-0.000000,-0.000000,-0.000000,-0.000000,-0.000000,-0.000001,-0.000001,-0.000003,-0.000066,-0.000105,-0.001221]
                                 ]]
 
-        _refractive_indexes_real_simu = [[[1.5300,1.5300,1.5300,1.5300,1.5274,1.5246,1.5213,1.5200,1.5200,1.5177,1.4338,1.3752,1.2283],
+        _s2_refractive_indexes_real_simu = [[[1.5300,1.5300,1.5300,1.5300,1.5274,1.5246,1.5213,1.5200,1.5200,1.5177,1.4338,1.3752,1.2283],
                                           [1.5300,1.5300,1.5300,1.5300,1.5274,1.5246,1.5213,1.5200,1.5200,1.5177,1.4338,1.3752,1.2283],
                                           [1.5300,1.5300,1.5300,1.5300,1.5274,1.5246,1.5213,1.5200,1.5200,1.5177,1.4338,1.3752,1.2283],
                                           [1.5300,1.5300,1.5300,1.5300,1.5274,1.5246,1.5213,1.5200,1.5200,1.5177,1.4338,1.3752,1.2283],
@@ -186,12 +187,20 @@ class Library:
                                           [1.3520,1.3506,1.3486,1.3463,1.3456,1.3450,1.3442,1.3435,1.3430,1.3419,1.3347,1.3296,1.3092]
                                           ]]
 
-        self.refractive_indexes_img_simu = xr.DataArray(_refractive_indexes_img_simu,
+
+        self.s2_refractive_indexes_real_simu = xr.DataArray(_s2_refractive_indexes_real_simu,
+                                                        dims=("species", "rh", "wavelength"),
+                                                        coords={"species": self._species_short,
+                                                                "rh": self.relative_humidity,
+                                                                "wavelength": self.sentinel2_wavelengths})
+
+        self.s2_refractive_indexes_img_simu = xr.DataArray(_s2_refractive_indexes_img_simu,
                                                dims=("species", "rh", "wavelength"),
                                                coords={"species": self._species_short,
                                                        "rh": self.relative_humidity,
                                                        "wavelength": self.sentinel2_wavelengths})
 
+        #TODO: create method get_refractive_indexes_reference with a linear interpolation of s2 values at 'ref'
 
 class Mode:
 
@@ -205,3 +214,4 @@ class Model:
         pass
 
 
+ld = Library()
