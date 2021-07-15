@@ -48,14 +48,14 @@ def launch(params):
     return r.launch(target)
 
 
-def exp(wavelength, thetas, aer_collection_dir, output_dir, verbose=False,
-        thetas_min=0, thetas_max=85, thetas_step=5,
-        tau_min=0.0, tau_max=1.2, tau_step=0.2, #0, 1.2, 0.4
-        rho_s_min=0.1, rho_s_max=1.15, rho_s_step=0.05, #0.1, 1.15, 0.15
+def exp(aer_collection_dir, output_dir, verbose=False,
+        thetas_min=0, thetas_max=85, thetas_step=30,
+        tau_min=0.0, tau_max=1.2, tau_step=0.4, #0, 1.2, 0.4
+        rho_s_min=0.1, rho_s_max=1.15, rho_s_step=0.15, #0.1, 1.15, 0.15
         netcdf_filename="data.nc"):
     """
     Create output array and set values from SOS_ABS runs
-    :param wavelength: simulation wavelength, in micrometers
+    :param wavelength: (list) simulation wavelength, in micrometers
     :param thetas: sun zenith angle, 0 is nadir
     :param output_dir: root output directory
     :param aer_collection_dir: user defined aerosol mixture
@@ -122,12 +122,6 @@ def main():
     """
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("wavelength",
-                        help="Wavelength ([0.2:4.0] micrometers)",
-                        type=float)
-    parser.add_argument("thetas",
-                        help="Solar zenith angle ([0:90] degrees)",
-                        type=float)
     parser.add_argument("aer_collection_dir",
                         help="Directory containing user defined aerosol file with extension .aer",
                         type=str)
@@ -143,12 +137,12 @@ def main():
     args = parser.parse_args()
 
     # Check args
-    if (args.wavelength < 0.2) or (args.wavelength > 4.0):
-        print("Error: the wavelength %6.3f is out of SOS_ABS range ([0.2:4.0] micrometers)" % args.wavelength)
-        sys.exit(1)
-    if (args.thetas < 0.) or (args.thetas > 90.):
-        print("Error: the solar zenith angle %6.3f is out of range ([0:90])" % args.thetas)
-        sys.exit(1)
+    # if (args.wavelength < 0.2) or (args.wavelength > 4.0):
+    #     print("Error: the wavelength %6.3f is out of SOS_ABS range ([0.2:4.0] micrometers)" % args.wavelength)
+    #     sys.exit(1)
+    # if (args.thetas < 0.) or (args.thetas > 90.):
+    #     print("Error: the solar zenith angle %6.3f is out of range ([0:90])" % args.thetas)
+    #     sys.exit(1)
     if not os.path.isdir(args.aer_collection_dir):
         print("Error: %s is not a directory" % args.aer_collection_dir)
         sys.exit(1)
@@ -162,11 +156,7 @@ def main():
 
     time_init = time.time()
 
-    exp(args.wavelength,
-                                     args.thetas,
-                                     args.aer_collection_dir,
-                                     args.output_dir,
-                                     verbose=args.verbose)
+    exp(args.aer_collection_dir, args.output_dir, verbose=args.verbose)
 
     time_end = time.time()
     print("Done in %12.2fs..." % (time_end-time_init))
