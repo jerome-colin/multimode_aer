@@ -203,8 +203,10 @@ class Model:
             self.fstring += self.library.get_properties(i, wavelength_simu, wavelength_ref, ratio_list[i], self.library.species_short[i], rh)
 
     def to_file(self, fname):
-        with open(fname):
-            pass
+        f = open(fname)
+        f.write(self.fstring)
+        f.close()
+
 
 ld = Aerosol()
 a = ld.get_properties(1, 560, 550, 0.5, "BC", 30)
