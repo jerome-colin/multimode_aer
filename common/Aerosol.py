@@ -190,18 +190,25 @@ class Aerosol:
 
         return aer_str
 
-class Mode:
-
-    def __init__(self):
-        pass
-
 
 class Model:
 
-    def __init__(self, name_list, ratio_list, rh_list):
-        pass
+    def __init__(self, ratio_list, rh, wavelength_simu, wavelength_ref):
+        self._nb_modes = 7
+        self.fstring = "NUMBER OF AEROSOLS MODES: %i\n" % self._nb_modes
 
+        self.library = Aerosol()
+
+        for i in range(self._nb_modes):
+            self.fstring += self.library.get_properties(i, wavelength_simu, wavelength_ref, ratio_list[i], self.library.species_short[i], rh)
+
+    def to_file(self, fname):
+        with open(fname):
+            pass
 
 ld = Aerosol()
-a = ld.get_properties(1, 443, 550, 0.5, "DU", 30)
+a = ld.get_properties(1, 560, 550, 0.5, "BC", 30)
 print(a)
+
+md= Model([0.25,0.1,0.1,0.05,0.20,0.20,0.10], 30, 560, 550)
+print(md.fstring)
