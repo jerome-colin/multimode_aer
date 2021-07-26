@@ -54,7 +54,7 @@ def exp(wavelength, aer_collection_dir, output_dir, collection=None, verbose=Fal
         thetas_min=0, thetas_max=85, thetas_step=30,
         tau_min=0.0, tau_max=1.2, tau_step=0.4, #0, 1.2, 0.4
         rho_s_min=0.1, rho_s_max=1.15, rho_s_step=0.15, #0.1, 1.15, 0.15
-        netcdf_filename="data.nc"):
+        netcdf_filename=None):
     """
     Create output array and set values from SOS_ABS runs
     :param wavelength: (list) simulation wavelength, in micrometers
@@ -76,9 +76,9 @@ def exp(wavelength, aer_collection_dir, output_dir, collection=None, verbose=Fal
     thetas_list = np.round(np.arange(thetas_min, thetas_max, thetas_step), 1)
 
     #relative_humidity = [30., 50., 70., 80., 85., 90., 95.]
-    relative_humidity = [70.]
+    relative_humidity = [30.]
 
-    ratios = Ratio.Ratio(0.5).list
+    ratios = Ratio.Ratio(1).list
 
     #DEBUG ONLY:
     #collection = "/home/colinj/code/luts_init/multimodes_aer/resources"
@@ -88,7 +88,7 @@ def exp(wavelength, aer_collection_dir, output_dir, collection=None, verbose=Fal
     if collection is None:
         for r in range(len(ratios)):
             for h in range(len(relative_humidity)):
-                aer_list.append(Aerosol.Model(ratios[r], relative_humidity[h], wavelength, 550).to_file(aer_collection_dir))
+                aer_list.append(Aerosol.Model(ratios[r], relative_humidity[h], wavelength, 0.550).to_file(aer_collection_dir))
 
         aer_list_coords = aer_list
         print("INFO: create %i aer files" % len(aer_list))
@@ -119,6 +119,8 @@ def exp(wavelength, aer_collection_dir, output_dir, collection=None, verbose=Fal
                         coords={"model": aer_list_coords, "thetas": thetas_list, "tau": tau_list, "rho_s": rho_s_list})
 
     # Saving to netcdf
+    if netcdf_filename is None:
+        netcdf_filename = "data_%04d.nc" % int(float(wavelength)*1000)
     data.to_netcdf("%s/%s" % (output_dir, netcdf_filename))
 
     # TEST VALUES

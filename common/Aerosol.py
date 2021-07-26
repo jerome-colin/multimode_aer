@@ -227,18 +227,20 @@ class Model:
         f.close()
         return path + '/' + fname
 
+test = None
 
-ld = Aerosol()
-a = ld.get_properties(1, 0.560, 0.550, 0.5, "BC", 30)
-print(a)
+if test is not None:
+    ld = Aerosol()
+    a = ld.get_properties(1, 0.560, 0.550, 0.5, "BC", 30)
+    print(a)
 
-md= Model([0.25,0.1,0.1,0.05,0.20,0.20,0.10], 30, 0.560, 0.550)
-print(md.fstring)
+    md= Model([0.25,0.1,0.1,0.05,0.20,0.20,0.10], 30, 0.560, 0.550)
+    print(md.fstring)
 
-md.to_file("/home/colinj/tmpdir/")
+    md.to_file("/home/colinj/tmpdir/")
 
 
-md2= Model([0.0,0.0,0.0,1,0.0,0.0,0.0], 30, 0.560, 0.550)
+    md2= Model([1.0,0.0,0.0,0,0.0,0.0,0.0], 30, 0.560, 0.550)
 
-toto = md2.to_file("/home/colinj/tmpdir/")
-print(toto)
+    toto = md2.to_file("/home/colinj/tmpdir/")
+    print(md2.fstring)

@@ -19,6 +19,9 @@ class Ratio:
                                         self.list.append([a, b, c, d, e, f, g])
 
 
-it_list = Ratio(0.25)
-print(it_list.list)
-print(len(it_list.list))
+test = None
+
+if test is not None:
+    it_list = Ratio(0.25)
+    print(it_list.list)
+    print(len(it_list.list))
