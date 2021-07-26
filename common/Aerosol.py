@@ -29,7 +29,7 @@ class Aerosol:
                                                                              "rh": self.relative_humidity})
         # Refractive indexes
         # Warning: wavelength dimension not ordered, but follows S2A + REF (550nm), S2B diff neglected as a first approximation
-        self.sentinel2_wavelengths = [443 , 492, 560, 664, 704, 740, 783, 830, 865, 945, 1373, 1613, 2198]
+        self.sentinel2_wavelengths = [0.443 , 0.492, 0.560, 0.664, 0.704, 0.740, 0.783, 0.830, 0.865, 0.945, 0.1373, 0.1613, 0.2198]
 
         _s2_refractive_indexes_img_simu = [[[-0.007581,-0.005964,-0.005095,-0.003996,-0.004027,-0.004129,-0.004252,-0.004300,-0.004300,-0.004403,-0.004500,-0.004500,-0.004500],
                                      [-0.007581,-0.005964,-0.005095,-0.003996,-0.004027,-0.004129,-0.004252,-0.004300,-0.004300,-0.004403,-0.004500,-0.004500,-0.004500],
@@ -179,14 +179,14 @@ class Aerosol:
         return self.as_str(mode_nb, species, proportion, aer_modal_radius, aer_stddev, aer_refractive_index_real_simu, aer_refractive_index_img_simu, aer_refractive_index_real_ref, aer_refractive_index_img_ref)
 
     def as_str(self, mode_nb, species, proportion, modal_radius, stddev, refractive_index_wa_simu_real, refractive_index_wa_simu_img, refractive_index_wa_ref_real, refractive_index_wa_ref_img, size_distribution_mode="LND"):
-        aer_str = "SIZE DISTRIBUTION MODE %i (%s): %s\n" % (mode_nb, species, size_distribution_mode)
-        aer_str += "    MODAL RADIUS (microns)  : %8.6f\n" % modal_radius
-        aer_str += "    STANDARD DEVIATION (microns): %8.6f\n" % stddev
-        aer_str += "    REFRACTIVE INDEX at WA_SIMU - Real part: %8.6f\n" % refractive_index_wa_simu_real
-        aer_str += "    REFRACTIVE INDEX at WA_SIMU - Imaginary part (<0): %8.6f\n" % refractive_index_wa_simu_img
-        aer_str += "    REFRACTIVE INDEX at WA_REF - Real part: %8.6f\n" % refractive_index_wa_ref_real
-        aer_str += "    REFRACTIVE INDEX at WA_REF - Imaginary part (<0): %8.6f\n" % refractive_index_wa_ref_img
-        aer_str += "    PROPORTION TO THE TOTAL AOT at WA_REF : %8.6f\n" % proportion
+        aer_str = "SIZE DISTRIBUTION MODE %i (%s): %s\n" % (mode_nb+1, species, size_distribution_mode)
+        aer_str += "    MODAL RADIUS (microns)  : %6.4f\n" % modal_radius
+        aer_str += "    STANDARD DEVIATION (microns): %6.4f\n" % stddev
+        aer_str += "    REFRACTIVE INDEX at WA_SIMU - Real part: %6.4f\n" % refractive_index_wa_simu_real
+        aer_str += "    REFRACTIVE INDEX at WA_SIMU - Imaginary part (<0): %6.4f\n" % refractive_index_wa_simu_img
+        aer_str += "    REFRACTIVE INDEX at WA_REF - Real part: %6.4f\n" % refractive_index_wa_ref_real
+        aer_str += "    REFRACTIVE INDEX at WA_REF - Imaginary part (<0): %6.4f\n" % refractive_index_wa_ref_img
+        aer_str += "    PROPORTION TO THE TOTAL AOT at WA_REF : %6.4f\n" % proportion
 
         return aer_str
 
@@ -194,8 +194,8 @@ class Aerosol:
 class Model:
 
     def __init__(self, ratio_list, rh, wavelength_simu, wavelength_ref):
-        self._nb_modes = 7
-        self.fstring = "NUMBER OF AEROSOLS MODES: %i\n" % self._nb_modes
+        self._nb_modes = 0
+
         self.species_short = ["DU", "BC", "OM", "SS", "SU", "NI", "AM"]
         self.ratio_list = ratio_list
         self.rh = rh
@@ -203,8 +203,17 @@ class Model:
 
         self.library = Aerosol()
 
-        for i in range(self._nb_modes):
-            self.fstring += self.library.get_properties(i, wavelength_simu, wavelength_ref, ratio_list[i], self.library.species_short[i], rh)
+        for i in range(len(self.ratio_list)):
+            if self.ratio_list[i] != 0:
+                self._nb_modes += 1
+
+        self.fstring = "NUMBER OF AEROSOLS MODES: %i\n" % self._nb_modes
+
+        mode = 0
+        for i in range(len(self.ratio_list)):
+            if self.ratio_list[i] != 0:
+                self.fstring += self.library.get_properties(mode, wavelength_simu, wavelength_ref, ratio_list[i], self.library.species_short[i], rh)
+                mode += 1
 
     def to_file(self, path):
         fname = ''
@@ -220,16 +229,16 @@ class Model:
 
 
 ld = Aerosol()
-a = ld.get_properties(1, 560, 550, 0.5, "BC", 30)
+a = ld.get_properties(1, 0.560, 0.550, 0.5, "BC", 30)
 print(a)
 
-md= Model([0.25,0.1,0.1,0.05,0.20,0.20,0.10], 30, 560, 550)
+md= Model([0.25,0.1,0.1,0.05,0.20,0.20,0.10], 30, 0.560, 0.550)
 print(md.fstring)
 
 md.to_file("/home/colinj/tmpdir/")
 
 
-md2= Model([0.0,0.0,0.0,1,0.0,0.0,0.0], 30, 560, 550)
+md2= Model([0.0,0.0,0.0,1,0.0,0.0,0.0], 30, 0.560, 0.550)
 
 toto = md2.to_file("/home/colinj/tmpdir/")
 print(toto)

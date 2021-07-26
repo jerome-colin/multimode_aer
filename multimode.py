@@ -50,7 +50,7 @@ def launch(params):
     return r.launch(target)
 
 
-def exp(wavelength, aer_collection_dir, output_dir, verbose=False,
+def exp(wavelength, aer_collection_dir, output_dir, collection=None, verbose=False,
         thetas_min=0, thetas_max=85, thetas_step=30,
         tau_min=0.0, tau_max=1.2, tau_step=0.4, #0, 1.2, 0.4
         rho_s_min=0.1, rho_s_max=1.15, rho_s_step=0.15, #0.1, 1.15, 0.15
@@ -76,20 +76,28 @@ def exp(wavelength, aer_collection_dir, output_dir, verbose=False,
     thetas_list = np.round(np.arange(thetas_min, thetas_max, thetas_step), 1)
 
     #relative_humidity = [30., 50., 70., 80., 85., 90., 95.]
-    relative_humidity = [30., 70., 90.]
+    relative_humidity = [70.]
 
-    ratios = Ratio.Ratio(0.2).list
+    ratios = Ratio.Ratio(0.5).list
+
+    #DEBUG ONLY:
+    #collection = "/home/colinj/code/luts_init/multimodes_aer/resources"
 
     aer_list = []  # fullpath to aer model files
-    for r in range(len(ratios)):
-        for h in range(len(relative_humidity)):
-            aer_list.append(Aerosol.Model(ratios[r], relative_humidity[h], wavelength, 550).to_file(aer_collection_dir))
 
-    aer_list_coords = aer_list
-    # aer_list_coords = []  # clean aer model name for xarray coords
-    # for f in os.listdir(aer_collection_dir):
-    #     aer_list.append(os.path.join(aer_collection_dir, f))
-    #     aer_list_coords.append(f.split(sep='.')[0])
+    if collection is None:
+        for r in range(len(ratios)):
+            for h in range(len(relative_humidity)):
+                aer_list.append(Aerosol.Model(ratios[r], relative_humidity[h], wavelength, 550).to_file(aer_collection_dir))
+
+        aer_list_coords = aer_list
+        print("INFO: create %i aer files" % len(aer_list))
+
+    else: #DEBUG ONLY:
+        aer_list_coords = []  # clean aer model name for xarray coords
+        for f in os.listdir(collection):
+            aer_list.append(os.path.join(collection, f))
+            aer_list_coords.append(f.split(sep='.')[0])
 
     tau_list = np.round(np.arange(tau_min, tau_max, tau_step), 2)
     rho_s_list = np.round(np.arange(rho_s_min, rho_s_max, rho_s_step), 2)
@@ -167,7 +175,9 @@ def main():
     elif args.rmdir:
         shutil.rmtree(args.output_dir)
         os.mkdir(args.output_dir)
-        print("Info: %s cleaned-up" % args.output_dir)
+        shutil.rmtree(args.aer_collection_dir)
+        os.mkdir(args.aer_collection_dir)
+        print("Info: %s and %s cleaned-up" % (args.output_dir, args.aer_collection_dir))
 
     time_init = time.time()
 
