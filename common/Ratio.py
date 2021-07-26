@@ -7,6 +7,9 @@ class Ratio:
         # Moche, mais fonctionne
         bound_min = 0
         bound_max = 1 + step
+        self.step = step
+        self.coords = np.arange(bound_min, bound_max, step)
+        self.size = len(self.coords)
         self.list = []
         for a in np.arange(bound_min, bound_max, step):
             for b in np.arange(bound_min, bound_max, step):

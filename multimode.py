@@ -50,6 +50,9 @@ def launch(params):
     return r.launch(target)
 
 
+
+
+
 def exp(wavelength, aer_collection_dir, output_dir, collection=None, verbose=False,
         thetas_min=0, thetas_max=85, thetas_step=30,
         tau_min=0.0, tau_max=1.2, tau_step=0.4, #0, 1.2, 0.4
@@ -84,13 +87,14 @@ def exp(wavelength, aer_collection_dir, output_dir, collection=None, verbose=Fal
     #collection = "/home/colinj/code/luts_init/multimodes_aer/resources"
 
     aer_list = []  # fullpath to aer model files
-
+    aer_list_coords = []
     if collection is None:
         for r in range(len(ratios)):
             for h in range(len(relative_humidity)):
-                aer_list.append(Aerosol.Model(ratios[r], relative_humidity[h], wavelength, 0.550).to_file(aer_collection_dir))
+                aer_fname = Aerosol.Model(ratios[r], relative_humidity[h], wavelength, 0.550).to_file(aer_collection_dir)
+                aer_list.append(aer_fname)
+                aer_list_coords.append(aer_fname.split(sep='/')[-1].split(sep='.')[0])
 
-        aer_list_coords = aer_list
         print("INFO: create %i aer files" % len(aer_list))
 
     else: #DEBUG ONLY:
@@ -121,7 +125,9 @@ def exp(wavelength, aer_collection_dir, output_dir, collection=None, verbose=Fal
     # Saving to netcdf
     if netcdf_filename is None:
         netcdf_filename = "data_%04d.nc" % int(float(wavelength)*1000)
-    data.to_netcdf("%s/%s" % (output_dir, netcdf_filename))
+
+    ds = data.to_dataset(name='rho_toa')
+    ds.to_netcdf("%s/%s" % (output_dir, netcdf_filename))
 
     # TEST VALUES
     # dust_only_550nm, wl=550, thetas=0, tau=0, rho_s=0.1, rho_toa=0.126901

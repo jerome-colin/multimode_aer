@@ -215,11 +215,14 @@ class Model:
                 self.fstring += self.library.get_properties(mode, wavelength_simu, wavelength_ref, ratio_list[i], self.library.species_short[i], rh)
                 mode += 1
 
-    def to_file(self, path):
+    def to_file(self, path, short=False):
         fname = ''
         for i in range(len(self.ratio_list)):
-            if self.ratio_list[i] != 0:
-                fname += ("%s%03d" % (self.species_short[i], int(self.ratio_list[i]*100)))
+            if short:
+                if self.ratio_list[i] != 0:
+                    fname += ("%s%03d" % (self.species_short[i], int(self.ratio_list[i]*100)))
+            else:
+                fname += ("%s%03d" % (self.species_short[i], int(self.ratio_list[i] * 100)))
 
         fname += "RH" + str(int(self.rh)) + ".aer"
         f = open(path + '/' + fname, 'w')
@@ -227,7 +230,7 @@ class Model:
         f.close()
         return path + '/' + fname
 
-test = None
+test = 1
 
 if test is not None:
     ld = Aerosol()
