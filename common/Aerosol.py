@@ -169,7 +169,7 @@ class Aerosol:
         aer_refractive_index_img_simu = self.s2_refractive_indexes_img_simu.sel(species=species, rh=rh, wavelength=wavelength_simu)
 
         tmp_refractive_index_real_ref_allwl = self.s2_refractive_indexes_real_simu.sel(species=species, rh=rh)
-        print(tmp_refractive_index_real_ref_allwl)
+        #print(tmp_refractive_index_real_ref_allwl)
         aer_refractive_index_real_ref = tmp_refractive_index_real_ref_allwl.interp(wavelength=wavelength_ref)
 
         tmp_refractive_index_img_ref_allwl = self.s2_refractive_indexes_img_simu.sel(species=species, rh=rh)
@@ -196,16 +196,27 @@ class Model:
     def __init__(self, ratio_list, rh, wavelength_simu, wavelength_ref):
         self._nb_modes = 7
         self.fstring = "NUMBER OF AEROSOLS MODES: %i\n" % self._nb_modes
+        self.species_short = ["DU", "BC", "OM", "SS", "SU", "NI", "AM"]
+        self.ratio_list = ratio_list
+        self.rh = rh
+        self.wavelength_simu = wavelength_simu
 
         self.library = Aerosol()
 
         for i in range(self._nb_modes):
             self.fstring += self.library.get_properties(i, wavelength_simu, wavelength_ref, ratio_list[i], self.library.species_short[i], rh)
 
-    def to_file(self, fname):
-        f = open(fname)
+    def to_file(self, path):
+        fname = ''
+        for i in range(len(self.ratio_list)):
+            if self.ratio_list[i] != 0:
+                fname += ("%s%03d" % (self.species_short[i], int(self.ratio_list[i]*100)))
+
+        fname += "RH" + str(int(self.rh)) + ".aer"
+        f = open(path + '/' + fname, 'w')
         f.write(self.fstring)
         f.close()
+        return path + '/' + fname
 
 
 ld = Aerosol()
@@ -214,3 +225,11 @@ print(a)
 
 md= Model([0.25,0.1,0.1,0.05,0.20,0.20,0.10], 30, 560, 550)
 print(md.fstring)
+
+md.to_file("/home/colinj/tmpdir/")
+
+
+md2= Model([0.0,0.0,0.0,1,0.0,0.0,0.0], 30, 560, 550)
+
+toto = md2.to_file("/home/colinj/tmpdir/")
+print(toto)

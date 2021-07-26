@@ -10,6 +10,8 @@ import uuid
 
 import common.Sos as Sos
 import common.aerfile_parser as prs
+import common.Aerosol as Aerosol
+import common.Ratio as Ratio
 
 import time
 
@@ -48,7 +50,7 @@ def launch(params):
     return r.launch(target)
 
 
-def exp(aer_collection_dir, output_dir, verbose=False,
+def exp(wavelength, aer_collection_dir, output_dir, verbose=False,
         thetas_min=0, thetas_max=85, thetas_step=30,
         tau_min=0.0, tau_max=1.2, tau_step=0.4, #0, 1.2, 0.4
         rho_s_min=0.1, rho_s_max=1.15, rho_s_step=0.15, #0.1, 1.15, 0.15
@@ -70,14 +72,24 @@ def exp(aer_collection_dir, output_dir, verbose=False,
     """
     # Set lists for each dimensions
 
-    wavelength_list = [0.55]
+    wavelength_list = [wavelength]
     thetas_list = np.round(np.arange(thetas_min, thetas_max, thetas_step), 1)
 
+    #relative_humidity = [30., 50., 70., 80., 85., 90., 95.]
+    relative_humidity = [30., 70., 90.]
+
+    ratios = Ratio.Ratio(0.2).list
+
     aer_list = []  # fullpath to aer model files
-    aer_list_coords = []  # clean aer model name for xarray coords
-    for f in os.listdir(aer_collection_dir):
-        aer_list.append(os.path.join(aer_collection_dir, f))
-        aer_list_coords.append(f.split(sep='.')[0])
+    for r in range(len(ratios)):
+        for h in range(len(relative_humidity)):
+            aer_list.append(Aerosol.Model(ratios[r], relative_humidity[h], wavelength, 550).to_file(aer_collection_dir))
+
+    aer_list_coords = aer_list
+    # aer_list_coords = []  # clean aer model name for xarray coords
+    # for f in os.listdir(aer_collection_dir):
+    #     aer_list.append(os.path.join(aer_collection_dir, f))
+    #     aer_list_coords.append(f.split(sep='.')[0])
 
     tau_list = np.round(np.arange(tau_min, tau_max, tau_step), 2)
     rho_s_list = np.round(np.arange(rho_s_min, rho_s_max, rho_s_step), 2)
@@ -122,8 +134,11 @@ def main():
     """
 
     parser = argparse.ArgumentParser()
+    parser.add_argument("wavelength",
+                        help="wavelength",
+                        type=float)
     parser.add_argument("aer_collection_dir",
-                        help="Directory containing user defined aerosol file with extension .aer",
+                        help="Root of aer_collection_dir output directory",
                         type=str)
     parser.add_argument("output_dir",
                         help="Root of SOS_ABS output directory",
@@ -143,9 +158,9 @@ def main():
     # if (args.thetas < 0.) or (args.thetas > 90.):
     #     print("Error: the solar zenith angle %6.3f is out of range ([0:90])" % args.thetas)
     #     sys.exit(1)
-    if not os.path.isdir(args.aer_collection_dir):
-        print("Error: %s is not a directory" % args.aer_collection_dir)
-        sys.exit(1)
+    # if not os.path.isdir(args.aer_collection_dir):
+    #     print("Error: %s is not a directory" % args.aer_collection_dir)
+    #     sys.exit(1)
     if not os.path.isdir(args.output_dir):
         os.mkdir(args.output_dir)
         print("Warning: %s not found, created it..." % args.output_dir)
@@ -156,7 +171,7 @@ def main():
 
     time_init = time.time()
 
-    exp(args.aer_collection_dir, args.output_dir, verbose=args.verbose)
+    exp(args.wavelength, args.aer_collection_dir, args.output_dir, verbose=args.verbose)
 
     time_end = time.time()
     print("Done in %12.2fs..." % (time_end-time_init))
