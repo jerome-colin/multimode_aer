@@ -12,7 +12,7 @@ import common.Sos as Sos
 import common.aerfile_parser as prs
 import common.Aerosol as Aerosol
 import common.Ratio as Ratio
-
+import common.Sparse_to_Dense as sd
 import time
 
 
@@ -57,7 +57,7 @@ def exp(wavelength, aer_collection_dir, output_dir, collection=None, verbose=Fal
         thetas_min=0, thetas_max=85, thetas_step=30,
         tau_min=0.0, tau_max=1.2, tau_step=0.4, #0, 1.2, 0.4
         rho_s_min=0.1, rho_s_max=1.15, rho_s_step=0.15, #0.1, 1.15, 0.15
-        netcdf_filename=None):
+        netcdf_filename=None, to_dense=True):
     """
     Create output array and set values from SOS_ABS runs
     :param wavelength: (list) simulation wavelength, in micrometers
@@ -79,9 +79,10 @@ def exp(wavelength, aer_collection_dir, output_dir, collection=None, verbose=Fal
     thetas_list = np.round(np.arange(thetas_min, thetas_max, thetas_step), 1)
 
     #relative_humidity = [30., 50., 70., 80., 85., 90., 95.]
-    relative_humidity = [30.]
+    relative_humidity = [0.3]
 
-    ratios = Ratio.Ratio(1).list
+    ratios = Ratio.Ratio(1)
+    ratios_list = ratios.list
 
     #DEBUG ONLY:
     #collection = "/home/colinj/code/luts_init/multimodes_aer/resources"
@@ -89,9 +90,9 @@ def exp(wavelength, aer_collection_dir, output_dir, collection=None, verbose=Fal
     aer_list = []  # fullpath to aer model files
     aer_list_coords = []
     if collection is None:
-        for r in range(len(ratios)):
+        for r in range(len(ratios_list)):
             for h in range(len(relative_humidity)):
-                aer_fname = Aerosol.Model(ratios[r], relative_humidity[h], wavelength, 0.550).to_file(aer_collection_dir)
+                aer_fname = Aerosol.Model(ratios_list[r], relative_humidity[h], wavelength, 0.550).to_file(aer_collection_dir)
                 aer_list.append(aer_fname)
                 aer_list_coords.append(aer_fname.split(sep='/')[-1].split(sep='.')[0])
 
@@ -122,11 +123,18 @@ def exp(wavelength, aer_collection_dir, output_dir, collection=None, verbose=Fal
                         dims=("model", "thetas", "tau", "rho_s"),
                         coords={"model": aer_list_coords, "thetas": thetas_list, "tau": tau_list, "rho_s": rho_s_list})
 
+
+    # Sparse to dense array
+    if to_dense:
+        dense = sd.to_dense(wavelength_list, ratios, relative_humidity, data)
+    else:
+        dense = data
+
     # Saving to netcdf
     if netcdf_filename is None:
         netcdf_filename = "data_%04d.nc" % int(float(wavelength)*1000)
 
-    ds = data.to_dataset(name='rho_toa')
+    ds = dense.to_dataset(name='rho_toa')
     ds.to_netcdf("%s/%s" % (output_dir, netcdf_filename))
 
     # TEST VALUES
@@ -136,6 +144,7 @@ def exp(wavelength, aer_collection_dir, output_dir, collection=None, verbose=Fal
     # bc_only_550nm, wl=550, thetas=80, tau=0.4, rho_s=0.6, rho_tao=0.028060
     # dust_only_550nm, wl=550, thetas=5, tau=0.6, rho_s=1.05, rho_tao=1.008341
     # sulfate_hr30_80_bc_20_550nm, wl=550, thetas=55, tau=0.4, rho_s=0.15, rho_toa=0.130648
+    # ammonium_only_hr30, wl=560, thetas=60, tau=0.8, rho_s=0.7, rho_toa=0.343559
 
 
 def main():

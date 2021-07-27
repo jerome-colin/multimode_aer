@@ -5,8 +5,8 @@ class Ratio:
 
     def __init__(self, step):
         # Moche, mais fonctionne
-        bound_min = 0
-        bound_max = 1 + step
+        bound_min = 0.0
+        bound_max = 1.0 + step
         self.step = step
         self.coords = np.arange(bound_min, bound_max, step)
         self.size = len(self.coords)

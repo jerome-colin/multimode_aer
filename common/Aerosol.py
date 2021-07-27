@@ -5,7 +5,7 @@ class Aerosol:
     def __init__(self):
         self.species = ["DUST", "BLACK CARBON", "ORGANIC MATTER", "SEA SALT", "SULFATE", "NITRATE", "AMMONIUM"]
         self.species_short = ["DU", "BC", "OM", "SS", "SU", "NI", "AM"]
-        self.relative_humidity = [30., 50., 70., 80., 85., 90., 95.]
+        self.relative_humidity = [.30, 0.50, 0.70, 0.80, 0.85, 0.90, 0.95]
 
         # Modal radius, CAMS, from Bastien
         _modal_radius = [[0.29, 0.29, 0.29, 0.29, 0.29, 0.29, 0.29],
@@ -224,13 +224,13 @@ class Model:
             else:
                 fname += ("%s%03d" % (self.species_short[i], int(self.ratio_list[i] * 100)))
 
-        fname += "RH" + str(int(self.rh)) + ".aer"
+        fname += "RH" + str(int(self.rh*100)) + ".aer"
         f = open(path + '/' + fname, 'w')
         f.write(self.fstring)
         f.close()
         return path + '/' + fname
 
-test = 1
+test = None
 
 if test is not None:
     ld = Aerosol()
