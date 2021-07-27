@@ -38,5 +38,5 @@ def get_aermodel_as_attributes(aer_filename):
     except FileNotFoundError:
         pass
 
-toto = get_aermodel_as_attributes("/home/colinj/code/luts_init/multimodes_aer/resources/sulfate_hr30_60_dust_20_bc_20_550nm.aer")
-print(toto)
+#toto = get_aermodel_as_attributes("/home/colinj/code/luts_init/multimodes_aer/resources/sulfate_hr30_60_dust_20_bc_20_550nm.aer")
+#print(toto)

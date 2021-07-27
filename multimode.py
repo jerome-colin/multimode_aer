@@ -9,7 +9,7 @@ import multiprocessing
 import uuid
 
 import common.Sos as Sos
-import common.aerfile_parser as prs
+#import common.aerfile_parser as prs
 import common.Aerosol as Aerosol
 import common.Ratio as Ratio
 import common.Sparse_to_Dense as sd
