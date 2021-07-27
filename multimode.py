@@ -56,7 +56,7 @@ def launch(params):
 def exp(wavelength, aer_collection_dir, output_dir, collection=None, verbose=False,
         thetas_min=0, thetas_max=85, thetas_step=30,
         tau_min=0.0, tau_max=1.2, tau_step=0.4, #0, 1.2, 0.4
-        rho_s_min=0.1, rho_s_max=1.15, rho_s_step=0.15, #0.1, 1.15, 0.15
+        rho_s_min=0.1, rho_s_max=1.15, rho_s_step=0.15, ratio_step=0.2, #0.1, 1.15, 0.15
         netcdf_filename=None, to_dense=True):
     """
     Create output array and set values from SOS_ABS runs
@@ -79,9 +79,9 @@ def exp(wavelength, aer_collection_dir, output_dir, collection=None, verbose=Fal
     thetas_list = np.round(np.arange(thetas_min, thetas_max, thetas_step), 1)
 
     #relative_humidity = [30., 50., 70., 80., 85., 90., 95.]
-    relative_humidity = [0.3, 0.7]
+    relative_humidity = [0.3, 0.7, 0.9]
 
-    ratios = Ratio.Ratio(0.5)
+    ratios = Ratio.Ratio(ratio_step)
     ratios_list = ratios.list # TODO: useless variable, refactor
 
     #DEBUG ONLY:
@@ -162,6 +162,18 @@ def main():
     parser.add_argument("wavelength",
                         help="wavelength",
                         type=float)
+    parser.add_argument("thetas_step",
+                        help="Sun zenith angle step (15 recommended)",
+                        type=float)
+    parser.add_argument("tau_step",
+                        help="AOT step (0.2 recommended)",
+                        type=float)
+    parser.add_argument("rho_s_step",
+                        help="Surface reflectance step (0.15 recommended)",
+                        type=float)
+    parser.add_argument("ratio_step",
+                        help="Steps on ratios (0.2 recommended)",
+                        type=float)
     parser.add_argument("aer_collection_dir",
                         help="Root of aer_collection_dir output directory",
                         type=str)
@@ -198,7 +210,7 @@ def main():
 
     time_init = time.time()
 
-    exp(args.wavelength, args.aer_collection_dir, args.output_dir, verbose=args.verbose)
+    exp(args.wavelength, args.aer_collection_dir, args.output_dir, thetas_step=args.thetas_step, tau_step=args.tau_step, rho_s_step=args.rho_s_step, ratio_step=args.ratio_step, verbose=args.verbose)
 
     time_end = time.time()
     print("Done in %12.2fs..." % (time_end-time_init))
