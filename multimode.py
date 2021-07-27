@@ -79,10 +79,10 @@ def exp(wavelength, aer_collection_dir, output_dir, collection=None, verbose=Fal
     thetas_list = np.round(np.arange(thetas_min, thetas_max, thetas_step), 1)
 
     #relative_humidity = [30., 50., 70., 80., 85., 90., 95.]
-    relative_humidity = [0.3]
+    relative_humidity = [0.3, 0.7]
 
-    ratios = Ratio.Ratio(1)
-    ratios_list = ratios.list
+    ratios = Ratio.Ratio(0.5)
+    ratios_list = ratios.list # TODO: useless variable, refactor
 
     #DEBUG ONLY:
     #collection = "/home/colinj/code/luts_init/multimodes_aer/resources"
