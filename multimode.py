@@ -52,7 +52,7 @@ def exp(wavelength, output_dir, collection=None, verbose=False,
         thetas_min=0, thetas_max=85, thetas_step=30,
         tau_min=0.1, tau_max=1., tau_step=0.2,  # 0, 1.2, 0.4
         rho_s_min=0.1, rho_s_max=1.1, rho_s_step=0.2, ratio_step=0.2,  # 0.1, 1.15, 0.15
-        netcdf_filename=None, to_dense=True):
+        netcdf_filename=None, to_dense=False):
     """
     Create output array and set values from SOS_ABS runs
     :param wavelength: (list) simulation wavelength, in micrometers
@@ -183,6 +183,9 @@ def main():
     parser.add_argument("--rmdir",
                         help="Force deletion of output dir if exist",
                         action="store_true", default=False)
+    parser.add_argument("--dense",
+                        help="Output dense matrix to netCDF",
+                        action="store_true", default=False)
     parser.add_argument("-v", "--verbose",
                         help="Print values to standard output",
                         action="store_true", default=False)
@@ -211,7 +214,7 @@ def main():
     time_init = time.time()
 
     exp(args.wavelength, args.output_dir, thetas_step=args.thetas_step, tau_step=args.tau_step,
-        rho_s_step=args.rho_s_step, ratio_step=args.ratio_step, verbose=args.verbose)
+        rho_s_step=args.rho_s_step, ratio_step=args.ratio_step, verbose=args.verbose, to_dense=args.dense)
 
     time_end = time.time()
     print("Done in %12.2fs..." % (time_end - time_init))
