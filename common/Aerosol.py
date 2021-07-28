@@ -29,7 +29,7 @@ class Aerosol:
                                                                              "rh": self.relative_humidity})
         # Refractive indexes
         # Warning: wavelength dimension not ordered, but follows S2A + REF (550nm), S2B diff neglected as a first approximation
-        self.sentinel2_wavelengths = [0.443 , 0.492, 0.560, 0.664, 0.704, 0.740, 0.783, 0.830, 0.865, 0.945, 0.1373, 0.1613, 0.2198]
+        self.sentinel2_wavelengths = [0.443 , 0.492, 0.560, 0.664, 0.704, 0.740, 0.783, 0.830, 0.865, 0.945, 1.373, 1.613, 2.198]
 
         _s2_refractive_indexes_img_simu = [[[-0.007581,-0.005964,-0.005095,-0.003996,-0.004027,-0.004129,-0.004252,-0.004300,-0.004300,-0.004403,-0.004500,-0.004500,-0.004500],
                                      [-0.007581,-0.005964,-0.005095,-0.003996,-0.004027,-0.004129,-0.004252,-0.004300,-0.004300,-0.004403,-0.004500,-0.004500,-0.004500],
