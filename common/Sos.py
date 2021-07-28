@@ -1,5 +1,6 @@
 import subprocess
 import sys, os
+import shutil
 
 
 def _flatten(in_list):
@@ -91,7 +92,7 @@ class Sos_Run_Multimode():
         self.args.append("-SURF.Ind 1.34")
         self.args.append("-SOS.Trans fic_trans.txt")
 
-    def launch(self, main_resroot):
+    def launch(self, main_resroot, cleanup=True):
         """
         creates and launch a SOS_ABS run according to args
         :return: a rho_toa value for dphi = 0
@@ -110,6 +111,8 @@ class Sos_Run_Multimode():
         try:
             with open(self.main_resroot + '/SOS/SOS_Up.txt', 'r') as sos_up:
                 rho_toa = float(sos_up.readline().split()[2])
+                if cleanup:
+                    shutil.rmtree(main_resroot)
                 return rho_toa
 
         except FileNotFoundError:

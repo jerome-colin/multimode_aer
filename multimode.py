@@ -3,13 +3,11 @@ import argparse
 import xarray as xr
 import numpy as np
 import os, sys, shutil
-from collections import OrderedDict
 import itertools
 import multiprocessing
 import uuid
 
 import common.Sos as Sos
-#import common.aerfile_parser as prs
 import common.Aerosol as Aerosol
 import common.Ratio as Ratio
 import common.Sparse_to_Dense as sd
@@ -50,13 +48,10 @@ def launch(params):
     return r.launch(target)
 
 
-
-
-
 def exp(wavelength, aer_collection_dir, output_dir, collection=None, verbose=False,
         thetas_min=0, thetas_max=85, thetas_step=30,
-        tau_min=0.0, tau_max=1.2, tau_step=0.4, #0, 1.2, 0.4
-        rho_s_min=0.1, rho_s_max=1.15, rho_s_step=0.15, ratio_step=0.2, #0.1, 1.15, 0.15
+        tau_min=0.1, tau_max=1., tau_step=0.2,  # 0, 1.2, 0.4
+        rho_s_min=0.1, rho_s_max=1.1, rho_s_step=0.2, ratio_step=0.2,  # 0.1, 1.15, 0.15
         netcdf_filename=None, to_dense=True):
     """
     Create output array and set values from SOS_ABS runs
@@ -78,27 +73,28 @@ def exp(wavelength, aer_collection_dir, output_dir, collection=None, verbose=Fal
     wavelength_list = [wavelength]
     thetas_list = np.round(np.arange(thetas_min, thetas_max, thetas_step), 1)
 
-    #relative_humidity = [30., 50., 70., 80., 85., 90., 95.]
+    # relative_humidity = [30., 50., 70., 80., 85., 90., 95.]
     relative_humidity = [0.3, 0.7, 0.9]
 
     ratios = Ratio.Ratio(ratio_step)
-    ratios_list = ratios.list # TODO: useless variable, refactor
+    ratios_list = ratios.list  # TODO: useless variable, refactor
 
-    #DEBUG ONLY:
-    #collection = "/home/colinj/code/luts_init/multimodes_aer/resources"
+    # DEBUG ONLY:
+    # collection = "/home/colinj/code/luts_init/multimodes_aer/resources"
 
     aer_list = []  # fullpath to aer model files
     aer_list_coords = []
     if collection is None:
         for r in range(len(ratios_list)):
             for h in range(len(relative_humidity)):
-                aer_fname = Aerosol.Model(ratios_list[r], relative_humidity[h], wavelength, 0.550).to_file(aer_collection_dir)
+                aer_fname = Aerosol.Model(ratios_list[r], relative_humidity[h], wavelength, 0.550).to_file(
+                    aer_collection_dir)
                 aer_list.append(aer_fname)
                 aer_list_coords.append(aer_fname.split(sep='/')[-1].split(sep='.')[0])
 
         print("INFO: create %i aer files" % len(aer_list))
 
-    else: #DEBUG ONLY:
+    else:  # DEBUG ONLY:
         aer_list_coords = []  # clean aer model name for xarray coords
         for f in os.listdir(collection):
             aer_list.append(os.path.join(collection, f))
@@ -109,7 +105,7 @@ def exp(wavelength, aer_collection_dir, output_dir, collection=None, verbose=Fal
 
     # Generate a list of tuples where each tuple is a combination of parameters.
     # The list will contain all possible combinations of parameters.
-    paramlist = list(itertools.product(wavelength_list, aer_list, thetas_list, tau_list, rho_s_list ))
+    paramlist = list(itertools.product(wavelength_list, aer_list, thetas_list, tau_list, rho_s_list))
 
     # Generate processes equal to the number of cores
     pool = multiprocessing.Pool()
@@ -123,7 +119,6 @@ def exp(wavelength, aer_collection_dir, output_dir, collection=None, verbose=Fal
                         dims=("model", "thetas", "tau", "rho_s"),
                         coords={"model": aer_list_coords, "thetas": thetas_list, "tau": tau_list, "rho_s": rho_s_list})
 
-
     # Sparse to dense array
     if to_dense:
         dense = sd.to_dense(wavelength_list, ratios, relative_humidity, data)
@@ -132,7 +127,7 @@ def exp(wavelength, aer_collection_dir, output_dir, collection=None, verbose=Fal
 
     # Saving to netcdf
     if netcdf_filename is None:
-        netcdf_filename = "data_%04d.nc" % int(float(wavelength)*1000)
+        netcdf_filename = "data_%04d.nc" % int(float(wavelength) * 1000)
 
     ds = dense.to_dataset(name='rho_toa')
     ds.to_netcdf("%s/%s" % (output_dir, netcdf_filename))
@@ -210,12 +205,13 @@ def main():
 
     time_init = time.time()
 
-    exp(args.wavelength, args.aer_collection_dir, args.output_dir, thetas_step=args.thetas_step, tau_step=args.tau_step, rho_s_step=args.rho_s_step, ratio_step=args.ratio_step, verbose=args.verbose)
+    exp(args.wavelength, args.aer_collection_dir, args.output_dir, thetas_step=args.thetas_step, tau_step=args.tau_step,
+        rho_s_step=args.rho_s_step, ratio_step=args.ratio_step, verbose=args.verbose)
 
     time_end = time.time()
-    print("Done in %12.2fs..." % (time_end-time_init))
+    print("Done in %12.2fs..." % (time_end - time_init))
     sys.exit(0)
+
 
 if __name__ == "__main__":
     main()
-
