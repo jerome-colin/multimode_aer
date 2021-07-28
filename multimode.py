@@ -31,8 +31,8 @@ def launch(params):
     thetas = params[2]
     tau = params[3]
     rho_s = params[4]
-
-    target_root = "tmp"
+    #target_root = "tmp"
+    target_root = params[5]
 
     # Create a random target path for SOS outputs (avoid defining it before calling launch)
     uuid_str = str(uuid.uuid4())
@@ -48,7 +48,7 @@ def launch(params):
     return r.launch(target)
 
 
-def exp(wavelength, aer_collection_dir, output_dir, collection=None, verbose=False,
+def exp(wavelength, output_dir, collection=None, verbose=False,
         thetas_min=0, thetas_max=85, thetas_step=30,
         tau_min=0.1, tau_max=1., tau_step=0.2,  # 0, 1.2, 0.4
         rho_s_min=0.1, rho_s_max=1.1, rho_s_step=0.2, ratio_step=0.2,  # 0.1, 1.15, 0.15
@@ -68,6 +68,11 @@ def exp(wavelength, aer_collection_dir, output_dir, collection=None, verbose=Fal
     :param netcdf_filename
     :return: a <netcdf_filename> in <output_dir>
     """
+    aer_collection_dir = output_dir + "/aer"
+    os.makedirs(aer_collection_dir, mode=0o777, exist_ok=False)
+
+    root_path_list = [output_dir]
+
     # Set lists for each dimensions
 
     wavelength_list = [wavelength]
@@ -105,7 +110,7 @@ def exp(wavelength, aer_collection_dir, output_dir, collection=None, verbose=Fal
 
     # Generate a list of tuples where each tuple is a combination of parameters.
     # The list will contain all possible combinations of parameters.
-    paramlist = list(itertools.product(wavelength_list, aer_list, thetas_list, tau_list, rho_s_list))
+    paramlist = list(itertools.product(wavelength_list, aer_list, thetas_list, tau_list, rho_s_list, root_path_list))
 
     # Generate processes equal to the number of cores
     pool = multiprocessing.Pool()
@@ -169,9 +174,9 @@ def main():
     parser.add_argument("ratio_step",
                         help="Steps on ratios (0.2 recommended)",
                         type=float)
-    parser.add_argument("aer_collection_dir",
-                        help="Root of aer_collection_dir output directory",
-                        type=str)
+    # parser.add_argument("aer_collection_dir",
+    #                     help="Root of aer_collection_dir output directory",
+    #                     type=str)
     parser.add_argument("output_dir",
                         help="Root of SOS_ABS output directory",
                         type=str)
@@ -199,13 +204,13 @@ def main():
     elif args.rmdir:
         shutil.rmtree(args.output_dir)
         os.mkdir(args.output_dir)
-        shutil.rmtree(args.aer_collection_dir)
-        os.mkdir(args.aer_collection_dir)
-        print("Info: %s and %s cleaned-up" % (args.output_dir, args.aer_collection_dir))
+        # shutil.rmtree(args.aer_collection_dir)
+        # os.mkdir(args.aer_collection_dir)
+        print("Info: %s cleaned-up" % (args.output_dir))
 
     time_init = time.time()
 
-    exp(args.wavelength, args.aer_collection_dir, args.output_dir, thetas_step=args.thetas_step, tau_step=args.tau_step,
+    exp(args.wavelength, args.output_dir, thetas_step=args.thetas_step, tau_step=args.tau_step,
         rho_s_step=args.rho_s_step, ratio_step=args.ratio_step, verbose=args.verbose)
 
     time_end = time.time()
