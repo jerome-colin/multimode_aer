@@ -1,6 +1,7 @@
 import subprocess
 import sys, os
 import shutil
+import platform
 
 
 def _flatten(in_list):
@@ -28,7 +29,7 @@ class Sos_Run_Multimode():
                  igmax = 200,
                  aer_dirmie = None ,
                  surf_dir = None,
-                 sos_abs_fic = '/home/colinj/code/SOS_ABS_V4.0_beta6/fic'):
+                 sos_abs_fic = None):
         """
         Create an instance of SOS_ABS run with the following arguments and sys config
         :param main_wa: wavelength in micrometers
@@ -49,6 +50,13 @@ class Sos_Run_Multimode():
         :param sos_abs_fic: path to be exported as env variable
         """
 
+        # Custom local
+        if platform.node() == "":
+            self.sos_abs_fic = '/home/colinj/code/SOS_ABS_V4.0_beta6/fic'
+        else:
+            self.sos_abs_fic = '/work/scratch/colinj/SOS_ABS_V4.0_beta6/fic'
+
+        # Path to root
         self.main_resroot = main_resroot
 
         if aer_dirmie is None:
@@ -57,7 +65,7 @@ class Sos_Run_Multimode():
         if surf_dir is None:
             surf_dir = main_resroot + '/BRDF_BPDF'
 
-        self.sos_abs_fic = sos_abs_fic
+        # Other settings
         self.args = ['SOS_ABS_MAIN.exe']
         self.args.append("-SOS_Main.Wa %6.3f" % main_wa)
         self.args.append("-SOS_Main.ResRoot %s" % main_resroot)
