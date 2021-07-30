@@ -100,7 +100,7 @@ class Sos_Run_Multimode():
         self.args.append("-SURF.Ind 1.34")
         self.args.append("-SOS.Trans fic_trans.txt")
 
-    def launch(self, main_resroot, cleanup=True):
+    def launch(self, main_resroot, cleanup=False):
         """
         creates and launch a SOS_ABS run according to args
         :return: a rho_toa value for dphi = 0

@@ -4,7 +4,7 @@ import common.Ratio as Ratio
 import sys
 
 def split_model(model, verbose=False):
-    rDu = float(model[2:5]) / 100
+    rDU = float(model[2:5]) / 100
     rBC = float(model[7:10]) / 100
     rOM = float(model[12:15]) / 100
     rSS = float(model[17:20]) / 100
@@ -16,9 +16,17 @@ def split_model(model, verbose=False):
     if verbose:
         print(
             "rDu=%6.3f | rBC = %6.3f | rOM = %6.3f | rSS = %6.3f | rSU = %6.3f | rNI = %6.3f | rAM = %6.3f | RH = %6.3f" % (
-            rDu, rBC, rOM, rSS, rSU, rNI, rAM, RH))
+            rDU, rBC, rOM, rSS, rSU, rNI, rAM, RH))
 
-    return rDu, rBC, rOM, rSS, rSU, rNI, rAM, RH
+    #return '%.1f'%(rDu), '%.1f'%(rBC), '%.1f'%(rOM), '%.1f'%(rSS), '%.1f'%(rSU), '%.1f'%(rNI), '%.1f'%(rAM), '%.1f'%(RH)
+    return np.round(rDU, decimals=1), \
+           np.round(rBC, decimals=1), \
+           np.round(rOM, decimals=1), \
+           np.round(rSS, decimals=1), \
+           np.round(rSU, decimals=1), \
+           np.round(rNI, decimals=1), \
+           np.round(rAM, decimals=1), \
+           np.round(RH, decimals=3)
 
 
 def to_dense(wavelength_list, ratios, relative_humidity, res_array):
@@ -42,46 +50,43 @@ def to_dense(wavelength_list, ratios, relative_humidity, res_array):
                                 "tau": res_array['tau'].values,
                                 "rho_s": res_array['rho_s'].values})
 
-    try:
-        for mod in res_array['model'].values:
-            rDU, rBC, rOM, rSS, rSU, rNI, rAM, RH = split_model(mod)
+    #print(data.sel(rDU=0.6, method='nearest').values)
 
-            for the in res_array['thetas'].values:
-                for tau in res_array['tau'].values:
-                    for rho in res_array['rho_s'].values:
-                        # print(res_array.sel(model=mod, thetas=the, tau=tau, rho_s=rho).to_array().values[0])
+    nmod = 0
+    for mod in res_array['model'].values:
+        rDU, rBC, rOM, rSS, rSU, rNI, rAM, RH = split_model(mod)
+
+        for the in res_array['thetas'].values:
+            for tau in res_array['tau'].values:
+                for rho in res_array['rho_s'].values:
+                    # print(res_array.sel(model=mod, thetas=the, tau=tau, rho_s=rho).to_array().values[0])
+                    try:
+                        nmod += 1
                         data.loc[dict(wavelength=wavelength_list[0], rDU=rDU, rBC=rBC, rOM=rOM, rSS=rSS, rSU=rSU, rNI=rNI,
-                                      rAM=rAM, RH=RH, thetas=the, tau=tau, rho_s=rho)] = res_array.sel(model=mod, thetas=the, tau=tau, rho_s=rho).values
+                                      rAM=np.round(rAM, decimals=1), RH=RH, thetas=the, tau=tau, rho_s=rho)] = res_array.sel(model=mod, thetas=the, tau=tau, rho_s=rho).values
+                    except KeyError as e:
+                        print("ERROR: key error %s for model %i" % (e, nmod))
+                        print("   Destination file coordinates: wavelength=%f, rDU=%f, rBC=%f, rOM=%f, rSS=%f, rSU=%f, rNI=%f, rAM=%f, RH=%5.3f, thetas=%5.3f, tau=%5.3f, rho_s=%5.3f" %
+                              (wavelength_list[0], rDU, rBC, rOM, rSS, rSU, rNI, rAM, RH, the, tau, rho))
+                        print(
+                            "   Original file coordinates: model=%s, thetas=%5.3f, tau=%5.3f, rho_s=%5.3f" %
+                            (mod, the, tau, rho))
 
-        return data
 
-    except KeyError as e:
-        print("ERROR: Key error with the following specs")
-        print("    res_array dims:")
-        print(res_array.dims)
-        print(res_array.coords)
-        print(res_array['thetas'].values)
-        print(res_array['tau'].values)
-        print(res_array['rho_s'].values)
-        print(    "Vars:")
-        print(rDU, rBC, rOM, rSS, rSU, rNI, rAM, RH)
-        print("    dense array dims:")
-        print(data.dims)
-        print(data.coords)
-        print(data['wavelength'].values)
-        print(data['rDU'].values)
-        print(data['rBC'].values)
-        print(data['rOM'].values)
-        print(data['rSS'].values)
-        print(data['rSU'].values)
-        print(data['rNI'].values)
-        print(data['rAM'].values)
-        print(data['RH'].values)
-        print(data['thetas'].values)
-        print(data['tau'].values)
-        print(data['rho_s'].values)
-        print(e)
-        sys.exit(1)
+                        print("  Trying to get original file value: %8.6f" % res_array.sel(model=mod, thetas=the, tau=tau, rho_s=rho).values)
+
+                        print("  Destination array structure :")
+                        print("    dims: %s " % str(data.dims))
+                        print("    coords: %s" % str(data.coords))
+
+                        print("  Trying to get value on destination array: %8.6f" % data.sel(wavelength=wavelength_list[0], rDU=rDU, rBC=rBC, rOM=rOM, rSS=rSS, rSU=rSU, rNI=rNI, rAM=rAM, RH=RH, thetas=the, tau=tau, rho_s=rho).values)
+
+
+                        sys.exit(1)
+    return data
+
+
+
 
 
     # ds = data.to_dataset(name='rho_toa')

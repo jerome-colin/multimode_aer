@@ -8,7 +8,7 @@ class Ratio:
         bound_min = 0.0
         bound_max = 1.0 + step
         self.step = step
-        self.coords = np.arange(bound_min, bound_max, step)
+        self.coords = np.around(np.arange(bound_min, bound_max, step), decimals=2)
         self.size = len(self.coords)
         self.list = []
         for a in np.arange(bound_min, bound_max, step):
