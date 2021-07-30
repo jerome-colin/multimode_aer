@@ -1,11 +1,16 @@
 import xarray as xr
 import multimode as mlt
+import pytest
 
 def test_dense_array_560_oddtau(test_data):
-    assert test_data.sel(wavelength=0.56, rDU=0, rBC=0, rOM=0, rSS=1, rSU=0, rNI=0, rAM=0, RH=0.9, thetas='75',
-                         tau=0.5, rho_s=0.7).values == 0.152516
 
-    print("TEST COMPLETED...")
+    assert test_data.sel(wavelength=0.56, rDU=0, rBC=0, rOM=0, rSS=1, rSU=0, rNI=0, rAM=0, RH=0.9, thetas=75,
+                         tau=0.5, rho_s=0.7).values == pytest.approx(0.152516)
+    assert test_data.sel(wavelength=0.56, rDU=0, rBC=0, rOM=0, rSS=1, rSU=0, rNI=0, rAM=0, RH=0.3, thetas=45,
+                         tau=0.1, rho_s=0.85).values == pytest.approx(0.605819)
+    assert test_data.sel(wavelength=0.56, rDU=0, rBC=0, rOM=0, rSS=1, rSU=0, rNI=0, rAM=0, RH=0.3, thetas=45,
+                         tau=0.1, rho_s=0.85).values == pytest.approx(0.605819)
+
 
 
 # def test_dense_array_560_eventau(test_data):
@@ -32,3 +37,4 @@ if __name__ == "__main__":
     test_data = xr.open_dataset("hal/data_0560_dense.nc")['rho_toa']
     print("INIT TEST...")
     test_dense_array_560_oddtau(test_data)
+    print("Done...")

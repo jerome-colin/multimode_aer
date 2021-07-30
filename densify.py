@@ -1,12 +1,9 @@
-
 import sys
 import argparse
 import time
 import xarray as xr
 import common.Sparse_to_Dense as sp
 import common.Ratio as ra
-
-
 
 
 def main():
@@ -31,7 +28,9 @@ def main():
     ratios = ra.Ratio(0.2)
     dense = sp.to_dense(wavelength_list, ratios, relative_humidity, ds)
     dense_ds = dense.to_dataset(name='rho_toa')
-    dense_ds.to_netcdf("%s_dense.nc" % (args.infile[:-3]), mode="w")
+    comp = dict(zlib=True, complevel=5)
+    encoding = {var: comp for var in dense_ds.data_vars}
+    dense_ds.to_netcdf("%s_dense.nc" % (args.infile[:-3]), mode="w", encoding=encoding)
 
     time_end = time.time()
     print("Done in %12.2fs..." % (time_end - time_init))
