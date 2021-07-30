@@ -22,7 +22,7 @@ def main():
 
     time_init = time.time()
 
-    ds = xr.open_dataset("/home/colinj/code/luts_init/multimodes_aer/hal/data_0560.nc")['rho_toa']
+    ds = xr.open_dataset(args.infile)['rho_toa']
     wavelength_list = [args.wl]
     relative_humidity = [0.3, 0.7, 0.9]
     ratios = ra.Ratio(0.2)
@@ -30,6 +30,7 @@ def main():
     dense_ds = dense.to_dataset(name='rho_toa')
     comp = dict(zlib=True, complevel=5)
     encoding = {var: comp for var in dense_ds.data_vars}
+
     dense_ds.to_netcdf("%s_dense.nc" % (args.infile[:-3]), mode="w", encoding=encoding)
 
     time_end = time.time()

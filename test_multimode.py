@@ -2,16 +2,16 @@ import xarray as xr
 import multimode as mlt
 import pytest
 
-def test_dense_array_560_oddtau(test_data):
+def test_dense_array_oddtau(test_data):
 
     assert test_data.sel(wavelength=0.56, rDU=0, rBC=0, rOM=0, rSS=1, rSU=0, rNI=0, rAM=0, RH=0.9, thetas=75,
                          tau=0.5, rho_s=0.7).values == pytest.approx(0.152516)
     assert test_data.sel(wavelength=0.56, rDU=0, rBC=0, rOM=0, rSS=1, rSU=0, rNI=0, rAM=0, RH=0.3, thetas=45,
                          tau=0.1, rho_s=0.85).values == pytest.approx(0.605819)
-    assert test_data.sel(wavelength=0.56, rDU=0, rBC=0, rOM=0, rSS=1, rSU=0, rNI=0, rAM=0, RH=0.3, thetas=45,
-                         tau=0.1, rho_s=0.85).values == pytest.approx(0.605819)
+    assert test_data.sel(wavelength=0.492, rDU=0, rBC=0, rOM=1, rSS=0, rSU=0, rNI=0, rAM=0, RH=0.9, thetas=0,
+                         tau=0.5, rho_s=0.40).values == pytest.approx(0.407311)
 
-
+    print("Done...")
 
 # def test_dense_array_560_eventau(test_data):
 #
@@ -34,7 +34,7 @@ def test_dense_array_560_oddtau(test_data):
     #assert test_data.sel(wavelength=0.56, rDU=0.5, rBC=0.0, rOM=0, rSS=0.5, rSU=0, rNI=0, rAM=0., RH=0.7, thetas=0., tau=0.8, rho_s=0.25).values == 0.286377
 
 if __name__ == "__main__":
-    test_data = xr.open_dataset("hal/data_0560_dense.nc")['rho_toa']
+    test_data = xr.open_dataset("data_12b.nc")['rho_toa']
     print("INIT TEST...")
-    test_dense_array_560_oddtau(test_data)
+    test_dense_array_oddtau(test_data)
     print("Done...")
